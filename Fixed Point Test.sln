@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual Studio 2010
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FixedPointTest", "ConsoleApplication1\FixedPointTest.csproj", "{12EC7B09-B6A2-45B6-9C40-ED65CCFECDAB}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FixedPointTest", "FixedPointTest\FixedPointTest.csproj", "{12EC7B09-B6A2-45B6-9C40-ED65CCFECDAB}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
