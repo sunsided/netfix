@@ -1,4 +1,5 @@
-﻿using System.Diagnostics.Contracts;
+﻿using System.Diagnostics;
+using System.Diagnostics.Contracts;
 
 namespace ConsoleApplication1
 {
@@ -11,6 +12,7 @@ namespace ConsoleApplication1
     /// <remarks>
     /// http://x86asm.net/articles/fixed-point-arithmetic-and-tricks/
     /// </remarks>
+    [DebuggerDisplay("{ToDouble}")]
     public struct Fixed32
     {
         /// <summary>
@@ -117,23 +119,25 @@ namespace ConsoleApplication1
         /// </summary>
         /// <remarks>http://svn.gnucash.org/docs/HEAD/group__Math128.html#ga88ed8c48ea98cfe246ee12f16081f47e</remarks>
         [Pure]
-        private static Int128 Multiply(Fixed32 a, Fixed32 b)
+        private static Fixed32 Multiply(Fixed32 a, Fixed32 b)
         {
             long avalue = a.Value;
             long bvalue = b.Value;
-
-            Int128 prod;
-
-            prod.IsNegative = false;
+            bool isNegative = false;
+            
             if (0 > avalue)
             {
-                prod.IsNegative = !prod.IsNegative;
+                // negative-Flag negieren
+                isNegative = true; // !isNegative;
+
                 avalue = -avalue;
             }
 
             if (0 > bvalue)
             {
-                prod.IsNegative = !prod.IsNegative;
+                // negative-Flag negieren - falls erste Bedingung bereits zutraf
+                isNegative = !isNegative;
+
                 bvalue = -bvalue;
             }
 
@@ -161,20 +165,30 @@ namespace ConsoleApplication1
 
             ulong sum = d1 + e0 + f0;
             ulong carry = 0;
-            /* Can't say 1<<32 cause cpp will goof it up; 1ULL<<32 might work */
+
             const ulong roll = (long)1 << 32;
 
             const ulong pmax = roll - 1;
             while (pmax < sum)
             {
                 sum -= roll;
-                carry++;
+                ++carry;
             }
 
-            prod.Low = (long)(d0 + (sum << 32));
-            prod.High = (long)(carry + e1 + f1 + g0 + (g1 << 32));
-            
-            return prod;
+            var low = (long)(d0 + (sum << 32));
+            var high = (long)(carry + e1 + f1 + g0 + (g1 << 32));
+
+            // shift to correct Q
+            long result = (high & 0xFFFFFFFF) << 32 | ((low >> 32) & 0xFFFFFFFF);
+
+            // apply rounding
+            long value = low & ((long)1 << 31) << 1;
+            result += value;
+
+            // negate
+            if (isNegative) result = -result;
+
+            return new Fixed32(result);
         }
 
         /// <summary>
@@ -199,16 +213,7 @@ namespace ConsoleApplication1
             return new Fixed32(result);
 #else
 
-            Int128 prod = Multiply(a, b);
-
-            // shift to correct Q
-            long result = (prod.High & 0xFFFFFFFF) << 32 | ((prod.Low >> 32) & 0xFFFFFFFF);
-
-            // apply rounding
-            long value = prod.Low & ((long) 1 << 31) << 1;
-            result += value;
-
-            return new Fixed32(result);
+            return Multiply(a, b);
 #endif
         }
     }

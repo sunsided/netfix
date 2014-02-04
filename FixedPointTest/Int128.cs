@@ -16,11 +16,6 @@
         public long Low;
 
         /// <summary>
-        /// <code>true</code> if number is negative
-        /// </summary>
-        public bool IsNegative;
-
-        /// <summary>
         /// <code>true</code> if number won't fit in signed 64-bit
         /// </summary>
         public bool IsBig
